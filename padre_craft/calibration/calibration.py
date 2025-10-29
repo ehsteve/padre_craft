@@ -44,9 +44,9 @@ def process_file(filename: Path, overwrite=False) -> list:
         # Prepare Metadata for Output Files Naming and Headers
         test_flag = False
         level_str = "l0"
+        data_type = data_ts.meta["data_type"]
 
         aws_db.record_housekeeping(data_ts, data_type)
-        data_type = data_ts.meta["data_type"]
         data_table = Table(data_ts)
 
         # Get FITS Primary Header Template
@@ -70,6 +70,7 @@ def process_file(filename: Path, overwrite=False) -> list:
             level=level_str,
             descriptor=data_type,
             test=test_flag,
+            version="1.0.0",
             overwrite=overwrite,
         )
         primary_hdr["FILENAME"] = (path, get_comment("FILENAME"))

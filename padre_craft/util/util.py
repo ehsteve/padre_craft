@@ -14,10 +14,16 @@ from swxsoc.util import (
 
 from padre_craft import log
 
-__all__ = [
-    "filename_to_datatype",
-    "create_craft_filename",
-]
+__all__ = ["filename_to_datatype", "create_craft_filename", "parse_science_filename"]
+
+TOKEN_TO_DATATYPE = {
+    "CUBEADCS": "adcs",
+    "EPS": "housekeeping",
+    "GNSS": "gnss",
+    "MEDDEA": "meddea",
+    "SHIP": "sharp",
+    "BP": "battery",
+}
 
 
 def filename_to_datatype(filename: Path) -> str:
@@ -25,28 +31,19 @@ def filename_to_datatype(filename: Path) -> str:
     if not isinstance(filename, Path):
         filename = Path(filename)
     token = filename.name.split("get_")[1].split("_Data")[0]
-    if "CUBEADCS" in token:
-        return "adcs"
-    elif "EPS" in token:
-        return "housekeeping"
-    elif "GNSS" in token:
-        return "gnss"
-    elif "MEDDEA" in token:
-        return "meddea"
-    elif "SHIP" in token:
-        return "sharp"
-    elif "BP" in token:
-        return "battery"
-    else:
-        log.warning(f"Could not determine data type for file {filename.name}")
-        return token
+    for this_str, datatype in TOKEN_TO_DATATYPE.items():
+        if this_str in token:
+            return datatype
+    log.warning(f"Could not determine data type for file {filename.name}")
+    return token
 
 
 def create_craft_filename(
     time: Time,
     level: str,
     descriptor: str,
-    test: str,
+    version: str,
+    test: bool = False,
     overwrite: bool = False,
 ) -> str:
     """
@@ -73,9 +70,10 @@ def create_craft_filename(
     # Filename Version X.Y.Z comes from two parts:
     #   1. Files Version Base: X.Y comes from the Software Version -> Data Version Mapping
     #   2. File Version Incrementor: Z starts at 0 and iterates for each new version based on what already exists in the filesystem.
-    version_base = "1.0"
-    version_increment = 0
-    version_str = f"{version_base}.{version_increment}"
+    # version_base = "1.0"
+    # version_increment = 0
+    # version_str = f"{version_base}.{version_increment}"
+    version_str = version
 
     # The Base Filename is used for searching to see if we need to increase our version increment.
     base_filename = create_science_filename(
